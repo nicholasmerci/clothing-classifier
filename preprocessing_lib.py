@@ -23,7 +23,7 @@ def balance_bigger_labels(img_list, categ_array):
         label = categ_array[i]
         img = img_list[i]
         #Soglia massima di campioni per ogni label
-        if label_array[label] <= 8000:
+        if label_array[label] < 8000:
             img_list_unique.append(img)
             categ_unique.append(label)
             label_array[label] += 1
@@ -45,7 +45,7 @@ def filter_by_occlusion(img_list, df):
 
         #Tengo solamente i campioni con l'occlusione migliore
         #Inoltre mantengo anche tutte le immagini delle categorie meno rappresentate
-        if occlusion == 1 or category == 3 or category == 6:
+        if occlusion == 1 or category == 3 or category == 6 or category == 13:
             img_list_unique.append(img_list[i])
             categ_unique.append(category)
             label_array[category] += 1
@@ -151,9 +151,31 @@ def data_preparation(img_list, categ_array):
     x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.15, random_state=42)
 
 
-    np.save("x_train2.npy", x_train)
-    np.save("x_test2.npy", x_test)
-    np.save("y_train2.npy", y_train)
-    np.save("y_test2.npy", y_test)
+    np.save("x_train.npy", x_train)
+    np.save("x_test.npy", x_test)
+    np.save("y_train.npy", y_train)
+    np.save("y_test.npy", y_test)
 
     print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+
+    return x_train, x_test, y_train, y_test
+
+
+def df_from_dataset(anno_folder):
+    df_tot = pd.DataFrame(columns=['category', 'occlusion'])
+    i = 1
+    for filename in os.listdir(anno_folder):
+        with open(anno_folder + filename) as json_file:
+            data = json.load(json_file)
+            filtered_data = {k: v for k, v in data.items() if k.startswith('item')}
+
+            for key, v in filtered_data.items():
+                df = pd.DataFrame([[v['category_id'], v['occlusion']]], columns=['category', 'occlusion'])
+                df_tot = df_tot.append(df)
+        if i % 100:
+            print(i)
+        i += 1
+
+    df_tot = df_tot.reset_index(drop=True)
+
+    df_tot.to_pickle("df_train.pkl")
