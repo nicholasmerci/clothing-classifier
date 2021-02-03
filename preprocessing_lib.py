@@ -197,7 +197,7 @@ def df_from_dataset(anno_folder):
     for filename in os.listdir(anno_folder):
         with open(anno_folder + filename) as json_file:
             data = json.load(json_file)
-            filtered_data = {k: v for k, v in data.items() if k.startswith('item')}
+            filtered_data = {k: v for k, v in data.items() if k.startswith('item1')}
 
             for key, v in filtered_data.items():
                 df = pd.DataFrame([[v['category_id'], v['occlusion']]], columns=['category', 'occlusion'])
