@@ -4,6 +4,9 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
+import random
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 
 def parameters_tuning(x_train, x_test, y_train, y_test, tuned_parameters, scores):
@@ -49,7 +52,7 @@ def parameters_tuning(x_train, x_test, y_train, y_test, tuned_parameters, scores
         print(classification_report(y_true, y_pred))
 
 
-def svm_linear(x_train, x_test, y_train, y_test, C, max_iteration):
+def svm_linear(test_images, x_train, x_test, y_train, y_test, C, max_iteration):
 
     kernel = 'linear'
 
@@ -70,10 +73,10 @@ def svm_linear(x_train, x_test, y_train, y_test, C, max_iteration):
     # dump(models, 'modelSVC.joblib')
     # models = load('modelSVC.joblib')
 
-    results_calculator(models, x_train, x_test, y_train, y_test)
+    results_calculator(test_images, models, x_train, x_test, y_train, y_test)
 
 
-def svm_poly(x_train, x_test, y_train, y_test, C, degree, max_iteration):
+def svm_poly(test_images, x_train, x_test, y_train, y_test, C, degree, max_iteration):
 
     kernel = 'poly'
 
@@ -94,10 +97,10 @@ def svm_poly(x_train, x_test, y_train, y_test, C, degree, max_iteration):
     # dump(models, 'modelSVC.joblib')
     # models = load('modelSVC.joblib')
 
-    results_calculator(models, x_train, x_test, y_train, y_test)
+    results_calculator(test_images, models, x_train, x_test, y_train, y_test)
 
 
-def svm_rbf(x_train, x_test, y_train, y_test, C, gamma, max_iteration):
+def svm_rbf(test_images, x_train, x_test, y_train, y_test, C, gamma, max_iteration):
 
     kernel = 'rbf'
 
@@ -118,10 +121,10 @@ def svm_rbf(x_train, x_test, y_train, y_test, C, gamma, max_iteration):
     # dump(models, 'modelSVC.joblib')
     # models = load('modelSVC.joblib')
 
-    results_calculator(models, x_train, x_test, y_train, y_test)
+    results_calculator(test_images, models, x_train, x_test, y_train, y_test)
 
 
-def results_calculator(models, x_train, x_test, y_train, y_test):
+def results_calculator(test_images, models, x_train, x_test, y_train, y_test):
 
     for i in range(13):
         models[i].fit(x_train, y_train == i + 1)
@@ -154,3 +157,113 @@ def results_calculator(models, x_train, x_test, y_train, y_test):
     print(confusion_matrix(y_test, predicted))
     print('Precisione media del classificatore: ' + "{0:.2f}".format(precision))
     print('Recall media del classificatore: ' + "{0:.2f}".format(recall))
+
+    random.seed()
+    images_to_print = [random.randint(0, 11038) for i in range(4)]
+
+    print('predicted:')
+    for i in images_to_print:
+        print(predicted[i])
+
+    print('ground truth:')
+
+    for i in images_to_print:
+        print(y_test[i])
+
+    import time
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+
+    fig = plt.figure(figsize=(8, 8))
+    for i in range(len(images_to_print)):
+        sub = fig.add_subplot(1, len(images_to_print), i+1)
+        filename = test_images[images_to_print[i]]
+        img = mpimg.imread("train/image/" + filename + ".jpg")
+        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
+        sub.text(.5, .05, txt, ha='left')
+        plt.imshow(img)
+        plt.savefig("svm"+str(timestr))
+    plt.clf()
+
+    time.sleep(2)
+
+    random.seed()
+    images_to_print = [random.randint(0, 11038) for i in range(4)]
+
+    print('predicted:')
+    for i in images_to_print:
+        print(predicted[i])
+
+    print('ground truth:')
+
+    for i in images_to_print:
+        print(y_test[i])
+
+    import time
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+
+    fig = plt.figure(figsize=(8, 8))
+    for i in range(len(images_to_print)):
+        sub = fig.add_subplot(1, len(images_to_print), i + 1)
+        filename = test_images[images_to_print[i]]
+        img = mpimg.imread("train/image/" + filename + ".jpg")
+        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
+        sub.text(.5, .05, txt, ha='left')
+        plt.imshow(img)
+        plt.savefig("svm" + str(timestr))
+    plt.clf()
+
+    time.sleep(2)
+
+    random.seed()
+    images_to_print = [random.randint(0, 11038) for i in range(4)]
+
+    print('predicted:')
+    for i in images_to_print:
+        print(predicted[i])
+
+    print('ground truth:')
+
+    for i in images_to_print:
+        print(y_test[i])
+
+    import time
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+
+    fig = plt.figure(figsize=(8, 8))
+    for i in range(len(images_to_print)):
+        sub = fig.add_subplot(1, len(images_to_print), i + 1)
+        filename = test_images[images_to_print[i]]
+        img = mpimg.imread("train/image/" + filename + ".jpg")
+        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
+        sub.text(.5, .05, txt, ha='left')
+        plt.imshow(img)
+        plt.savefig("svm" + str(timestr))
+    plt.clf()
+
+    time.sleep(2)
+
+    random.seed()
+    images_to_print = [random.randint(0, 11038) for i in range(4)]
+
+    print('predicted:')
+    for i in images_to_print:
+        print(predicted[i])
+
+    print('ground truth:')
+
+    for i in images_to_print:
+        print(y_test[i])
+
+    import time
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+
+    fig = plt.figure(figsize=(8, 8))
+    for i in range(len(images_to_print)):
+        sub = fig.add_subplot(1, len(images_to_print), i + 1)
+        filename = test_images[images_to_print[i]]
+        img = mpimg.imread("train/image/" + filename + ".jpg")
+        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
+        sub.text(.5, .05, txt, ha='left')
+        plt.imshow(img)
+        plt.savefig("svm" + str(timestr))
+    plt.clf()

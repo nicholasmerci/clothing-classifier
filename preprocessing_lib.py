@@ -1,55 +1,68 @@
 import numpy as np
 import os
 import json
+import cv2
 import pandas as pd
 from skimage.io import imread
 from skimage.transform import resize
 from skimage.feature import hog
 from sklearn.model_selection import train_test_split
 from resnet import FeaturesExtractor
+import random
 
 
-def balance_bigger_labels(img_list, categ_array):
+def balance_bigger_labels(images, img_list, categ_array):
     label_array = np.zeros(14)
     img_list_unique = []
     categ_unique = []
+    images_unique = []
 
     #Randomizzo l'ordine dei campioni prima del filtraggio
     index = np.random.choice(img_list.shape[0], len(img_list), replace=False)
     img_list = img_list[index]
     categ_array = categ_array[index]
-
+    images = images[index]
+    j=1
     for i in range(len(img_list)):
         label = categ_array[i]
         img = img_list[i]
+        image = images[i]
         #Soglia massima di campioni per ogni label
         if label_array[label] < 8000:
             img_list_unique.append(img)
             categ_unique.append(label)
+            images_unique.append(image)
             label_array[label] += 1
-
+        if j % 100 == 0:
+            print(j)
+        j+=1
     print(len(img_list_unique))
+    print(len(images_unique))
 
     print(label_array)
-    return img_list_unique, categ_unique
+    return images_unique, img_list_unique, categ_unique
 
 
 def filter_by_occlusion(img_list, df):
     img_list_unique = []
     categ_unique = []
+    images = []
     label_array = np.zeros(14)
-
+    j = 1
     for i in range(len(img_list)):
         occlusion = df.iloc[i]['occlusion']
         category = df.iloc[i]['category']
-
+        filename = df.iloc[i]['filename']
         #Tengo solamente i campioni con l'occlusione migliore
         #Inoltre mantengo anche tutte le immagini delle categorie meno rappresentate
         if occlusion == 1 or category == 3 or category == 6 or category == 13:
             img_list_unique.append(img_list[i])
             categ_unique.append(category)
+            images.append(filename)
             label_array[category] += 1
-
+        if j % 100 == 0:
+            print(j)
+        j+=1
     '''
     np.save("img_list_occlusion_bal.npy", img_list_unique)
     np.save("categ_occlusion_bal.npy", categ_unique)
@@ -57,7 +70,7 @@ def filter_by_occlusion(img_list, df):
     print(len(img_list_unique))
     print(label_array)
 
-    return img_list_unique, categ_unique
+    return images, img_list_unique, categ_unique
 
 
 def hog_feat_extractor():
@@ -71,7 +84,7 @@ def hog_feat_extractor():
 
         with open(anno_folder + filename) as json_file:
             data = json.load(json_file)
-            filtered_data = {k: v for k, v in data.items() if k.startswith('item')}
+            filtered_data = {k: v for k, v in data.items() if k.startswith('item1')}
             filename = filename.split('.')[0] + ".jpg"
 
             for key, v in filtered_data.items():
@@ -135,7 +148,7 @@ def neural_feat_extractor():
     return img_list, categ_array
 
 
-def data_preparation(img_list, categ_array):
+def data_preparation(images, img_list, categ_array):
 
     x_data = []
     y_data = []
@@ -147,18 +160,35 @@ def data_preparation(img_list, categ_array):
 
     x_data = np.array(x_data)
     y_data = np.array(y_data)
+    test_images = np.asarray(images)
     #Suddivisione dati tra Train e Test set
-    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.15, random_state=42)
+    random.seed()
+    train_index = random.sample(range(len(img_list + 1)), 62553)
+    tot_index = [i for i in range(len(img_list))]
+
+    test_index = []
+    for v in tot_index:
+        if v not in train_index:
+            test_index.append(v)
+
+    x_train = x_data[train_index]
+    y_train = y_data[train_index]
+    x_test = x_data[test_index]
+    y_test = y_data[test_index]
+    test_images = images[test_index]
+
+    #x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.15, random_state=42)
 
 
-    np.save("x_train.npy", x_train)
-    np.save("x_test.npy", x_test)
-    np.save("y_train.npy", y_train)
-    np.save("y_test.npy", y_test)
+    np.save("x_train3.npy", x_train)
+    np.save("x_test3.npy", x_test)
+    np.save("y_train3.npy", y_train)
+    np.save("y_test3.npy", y_test)
+    np.save("test_images.npy", test_images)
 
     print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 
-    return x_train, x_test, y_train, y_test
+    return test_images, x_train, x_test, y_train, y_test
 
 
 def df_from_dataset(anno_folder):
