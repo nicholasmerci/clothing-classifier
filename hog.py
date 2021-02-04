@@ -3,6 +3,9 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+'''
+https://github.com/PENGZhaoqing/Hog-feature
+'''
 
 class Hog_descriptor():
     def __init__(self, img, cell_size=16, bin_size=8):

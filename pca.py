@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def pca(x_train, x_test, n_components):
     from sklearn.decomposition import PCA
 
@@ -12,8 +11,8 @@ def pca(x_train, x_test, n_components):
     print("Features dimensionality after pca:")
     print(x_train.shape, x_test.shape)
 
-    np.save("x_train3PCA75", x_train)
-    np.save("x_test3PCA75", x_test)
+    np.save("x_trainPCA75", x_train)
+    np.save("x_testPCA75", x_test)
 
     return x_train, x_test
 

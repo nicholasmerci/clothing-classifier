@@ -3,65 +3,81 @@ from preprocessing_lib import *
 from knn import *
 from pca import *
 from svm import *
+import os.path
+from os import path
 
-#Dataframe contenente tutte le info sul datasetù
-'''
 anno_folder = "train/annos/"
-#df = df_from_dataset(anno_folder)
-df = pd.read_pickle("df_train.pkl")
+train_file = "df_train.pkl"
+
+# Loading dataframe
+print("Reading dataset...", end='')
+if path.exists(train_file):
+    print("from file...", end='')
+    df = pd.read_pickle(train_file)
+else:
+    print("from dataset folder (it might take some minutes)...", end='')
+    df = df_from_dataset(anno_folder, train_file)
+print("loading completed.")
+
+# Extracting HOG features
+print("Feature Extraction...")
+
+if (not path.exists("img_list_hog.npy")) and (not path.exists("categ_array_hog.npy")):
+    print("no saved features, it might take several time.")
+else:
+    print("from file (it might take some minutes)...")
+
+if (not path.exists("img_list_hog.npy")) and (not path.exists("categ_array_hog.npy")):
+    img_list, categ_array = hog_feat_extractor()
+else:
+    img_list = np.load("img_list_hog.npy")
+    categ_array = np.load("categ_array_hog.npy")
+print("completed.")
 
 
-#Estrazione HOG feature
-#img_list, categ_array = hog_feat_extractor()
-
-img_list = np.load("img_list.npy")
-categ_array = np.load("categ_array.npy")
-
-
-#Estrazione NN feature
+# Extracting NN features
 #img_list, categ_array = neural_feat_extractor()
 
-#Filtro in base al livello di occlusione
-images, img_list, categ_array = filter_by_occlusion(img_list, df)
+# Filtering by occlusion 
+print("Filtering dataset")
+img_file_names, img_list, categ_array = filter_by_occlusion(img_list, df)
 img_list = np.asarray(img_list)
-images = np.asarray(images)
+img_file_names = np.asarray(img_file_names)
 categ_array = np.asarray(categ_array)
 
-#Cerco di bilanciare le classi maggiormente rappresentate
-images, img_list, categ_array = balance_bigger_labels(images, img_list, categ_array)
+# Balancing most representative classes
+print("Classes Balancing")
+img_file_names, img_list, categ_array = balance_bigger_labels(img_file_names, img_list, categ_array)
 
-np.save("img_list_temp.npy", img_list)
-np.save("categ_array_temp.npy", categ_array)
-
-
-#Preparo i dati ad essere utilizzati con KNN e SVM
-test_images, x_train, x_test, y_train, y_test = data_preparation(images, img_list, categ_array)
+# Preparing dataset for KNN and SVM
+print("Preparing data")
+test_images, x_train, x_test, y_train, y_test = data_preparation(img_file_names, img_list, categ_array)
 
 '''
-test_images = np.load("test_images.npy")
+    Reduction of features dimensionality
+'''
 
-x_train = np.load('x_train3PCA75.npy')
-x_test = np.load('x_test3PCA75.npy')
+# Feature Normalization
+print("Feature Normalization")
+x_train, x_test = data_scaler(x_train, x_test)
 
-y_train = np.load('y_train3.npy')
-y_test = np.load('y_test3.npy')
+# Principal Component Analysis
+n_components = .75
+x_train, x_test = pca(x_train, x_test, n_components)
 
-#Normalizzo le feature
-#x_train, x_test = data_scaler(x_train, x_test)
-
-#Riduco dimensionalità feature tramite PCA
-#n_components = .75
-#x_train, x_test = pca(x_train, x_test, n_components)
-
-#Creo un classificatore con KNN
+'''
+    KNN Classifier
 '''
 k = 1
 metric = 'cosine'
 knn_classifier(test_images, x_train, x_test, y_train, y_test, k, metric)
 
+'''
+    SVM Classifier
+'''
 
-#Tuning dei parametri per SVM
-#Calcolo i migliori parametri per precision e recall
+# Parameters Tuning
+# Finding best parameters wrt precision and recall
 
 scores = ['precision', 'recall']
 
@@ -70,9 +86,8 @@ scores = ['precision', 'recall']
 tuned_parameters = [{'kernel': ['rbf'], 'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001]}]
 
 parameters_tuning(x_train, x_test, y_train, y_test, tuned_parameters, scores)
-'''
-#Creo un classificatore con SVM
-#Setto i parametri necessari
+
+# Setting parameters
 C = 10
 degree = 2
 gamma = 0.001

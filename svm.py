@@ -8,34 +8,35 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-
+'''
+    SVM Parameters tuning
+'''
 def parameters_tuning(x_train, x_test, y_train, y_test, tuned_parameters, scores):
+    # Creating a subset of the training set and scaling its features
+    train_subset = 3000
+    test_subset = 300
 
-    #Prendo un subset del dataset di training e ne scalo le feature
-    x_train = x_train[:3000]
-    x_test = x_train[:300]
-    y_train = y_train[:3000]
-    y_test = y_train[:300]
+    x_train = x_train[:train_subset]
+    x_test = x_train[:test_subset]
+    y_train = y_train[:train_subset]
+    y_test = y_train[:test_subset]
 
+    # Scaling
     scaler = StandardScaler()
     x_train = scaler.fit_transform(x_train)
     x_test = scaler.transform(x_test)
 
     for score in scores:
-        print("# Tuning hyper-parameters for %s" % score)
-        print()
+        print("# Tuning hyper-parameters for %s\n" % score)
 
         clf = GridSearchCV(
             SVC(), tuned_parameters, scoring='%s_macro' % score
         )
         clf.fit(x_train, y_train)
 
-        print("Best parameters set found on development set:")
-        print()
+        print("Best parameters set found on development set:\n")
         print(clf.best_params_)
-        print()
-        print("Grid scores on development set:")
-        print()
+        print("Grid scores on development set:\n")
         means = clf.cv_results_['mean_test_score']
         stds = clf.cv_results_['std_test_score']
         for mean, std, params in zip(means, stds, clf.cv_results_['params']):
@@ -43,12 +44,12 @@ def parameters_tuning(x_train, x_test, y_train, y_test, tuned_parameters, scores
                   % (mean, std * 2, params))
         print()
 
-        print("Detailed classification report:")
-        print()
-        print("The model is trained on the full development set.")
-        print("The scores are computed on the full evaluation set.")
-        print()
+        print("Detailed classification report:\n")
+        print("The model is trained on the full development set.\n")
+        print("The scores are computed on the full evaluation set.\n")
+
         y_true, y_pred = y_test, clf.predict(x_test)
+        # Showing best parameters
         print(classification_report(y_true, y_pred))
 
 
@@ -73,7 +74,7 @@ def svm_linear(test_images, x_train, x_test, y_train, y_test, C, max_iteration):
     # dump(models, 'modelSVC.joblib')
     # models = load('modelSVC.joblib')
 
-    results_calculator(test_images, models, x_train, x_test, y_train, y_test)
+    results_calculator(test_images, models, x_train, x_test, y_train, y_test, kernel, max_iteration)
 
 
 def svm_poly(test_images, x_train, x_test, y_train, y_test, C, degree, max_iteration):
@@ -97,7 +98,7 @@ def svm_poly(test_images, x_train, x_test, y_train, y_test, C, degree, max_itera
     # dump(models, 'modelSVC.joblib')
     # models = load('modelSVC.joblib')
 
-    results_calculator(test_images, models, x_train, x_test, y_train, y_test)
+    results_calculator(test_images, models, x_train, x_test, y_train, y_test, kernel, max_iteration))
 
 
 def svm_rbf(test_images, x_train, x_test, y_train, y_test, C, gamma, max_iteration):
@@ -121,10 +122,12 @@ def svm_rbf(test_images, x_train, x_test, y_train, y_test, C, gamma, max_iterati
     # dump(models, 'modelSVC.joblib')
     # models = load('modelSVC.joblib')
 
-    results_calculator(test_images, models, x_train, x_test, y_train, y_test)
+    results_calculator(test_images, models, x_train, x_test, y_train, y_test, kernel, max_iteration)
 
-
-def results_calculator(test_images, models, x_train, x_test, y_train, y_test):
+'''
+    Calculating SVM classification results
+'''
+def results_calculator(test_images, models, x_train, x_test, y_train, y_test, kernel, iterations):
 
     for i in range(13):
         models[i].fit(x_train, y_train == i + 1)
@@ -137,13 +140,16 @@ def results_calculator(test_images, models, x_train, x_test, y_train, y_test):
     predicted_scores = np.asarray(predicted_scores)
     predicted = np.argmax(predicted_scores, axis=0)
 
+    # Building confusion matrix
     cmc = np.zeros((13, 13))
 
     for pr, y_te in zip(predicted, y_test):
         cmc[y_te-1, pr] += 1.0
 
+    # Calculating accuracy
     accuracy = np.sum(cmc.diagonal())/np.sum(cmc)
 
+    # Calculating precision and recall
     precision = []
     recall = []
     for i in range(13):
@@ -153,117 +159,29 @@ def results_calculator(test_images, models, x_train, x_test, y_train, y_test):
     precision = np.mean(np.asarray(precision))
     recall = np.mean(np.asarray(recall))
 
-    print('Accuratezza del classificatore: ' + "{0:.2f}".format(accuracy*100) + '%')
+    print('Accuracy: ' + "{0:.2f}".format(accuracy*100) + '%')
     print(confusion_matrix(y_test, predicted))
-    print('Precisione media del classificatore: ' + "{0:.2f}".format(precision))
-    print('Recall media del classificatore: ' + "{0:.2f}".format(recall))
+    print('Avg precision: ' + "{0:.2f}".format(precision))
+    print('Avg recall: ' + "{0:.2f}".format(recall))
 
+    # Plotting qualitative results
     random.seed()
-    images_to_print = [random.randint(0, 11038) for i in range(4)]
-
-    print('predicted:')
-    for i in images_to_print:
-        print(predicted[i])
-
-    print('ground truth:')
-
-    for i in images_to_print:
-        print(y_test[i])
+    samples_to_show = [random.randint(0, y_test.shape[0]-1) for i in range(4)]
 
     import time
     timestr = time.strftime("%Y%m%d-%H%M%S")
 
     fig = plt.figure(figsize=(8, 8))
-    for i in range(len(images_to_print)):
-        sub = fig.add_subplot(1, len(images_to_print), i+1)
-        filename = test_images[images_to_print[i]]
+    for i in range(len(samples_to_show)):
+        sub = fig.add_subplot(1, len(samples_to_show), i+1)
+        filename = test_images[samples_to_show[i]]
         img = mpimg.imread("train/image/" + filename + ".jpg")
-        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
+
+        # Printing prediction and ground truth
+        txt = "Predicted: " + str(predicted[samples_to_show[i]]+1) + "\n" + "Ground Truth: " + str(y_test[samples_to_show[i]]) + "\n"
         sub.text(.5, .05, txt, ha='left')
         plt.imshow(img)
-        plt.savefig("svm"+str(timestr))
-    plt.clf()
 
-    time.sleep(2)
-
-    random.seed()
-    images_to_print = [random.randint(0, 11038) for i in range(4)]
-
-    print('predicted:')
-    for i in images_to_print:
-        print(predicted[i])
-
-    print('ground truth:')
-
-    for i in images_to_print:
-        print(y_test[i])
-
-    import time
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-
-    fig = plt.figure(figsize=(8, 8))
-    for i in range(len(images_to_print)):
-        sub = fig.add_subplot(1, len(images_to_print), i + 1)
-        filename = test_images[images_to_print[i]]
-        img = mpimg.imread("train/image/" + filename + ".jpg")
-        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
-        sub.text(.5, .05, txt, ha='left')
-        plt.imshow(img)
-        plt.savefig("svm" + str(timestr))
-    plt.clf()
-
-    time.sleep(2)
-
-    random.seed()
-    images_to_print = [random.randint(0, 11038) for i in range(4)]
-
-    print('predicted:')
-    for i in images_to_print:
-        print(predicted[i])
-
-    print('ground truth:')
-
-    for i in images_to_print:
-        print(y_test[i])
-
-    import time
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-
-    fig = plt.figure(figsize=(8, 8))
-    for i in range(len(images_to_print)):
-        sub = fig.add_subplot(1, len(images_to_print), i + 1)
-        filename = test_images[images_to_print[i]]
-        img = mpimg.imread("train/image/" + filename + ".jpg")
-        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
-        sub.text(.5, .05, txt, ha='left')
-        plt.imshow(img)
-        plt.savefig("svm" + str(timestr))
-    plt.clf()
-
-    time.sleep(2)
-
-    random.seed()
-    images_to_print = [random.randint(0, 11038) for i in range(4)]
-
-    print('predicted:')
-    for i in images_to_print:
-        print(predicted[i])
-
-    print('ground truth:')
-
-    for i in images_to_print:
-        print(y_test[i])
-
-    import time
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-
-    fig = plt.figure(figsize=(8, 8))
-    for i in range(len(images_to_print)):
-        sub = fig.add_subplot(1, len(images_to_print), i + 1)
-        filename = test_images[images_to_print[i]]
-        img = mpimg.imread("train/image/" + filename + ".jpg")
-        txt = "Predicted: " + str(predicted[i]) + "\n" + "Ground Truth: " + str(y_test[i]) + "\n"
-        sub.text(.5, .05, txt, ha='left')
-        plt.imshow(img)
-        plt.savefig("svm" + str(timestr))
+        # Saving on file
+        plt.savefig("svm_kernel_"+str(kernel)+"_iter_"+str(iterations))
     plt.clf()
