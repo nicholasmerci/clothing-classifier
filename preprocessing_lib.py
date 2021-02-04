@@ -176,6 +176,7 @@ def data_preparation(img_file_names, img_list, categ_array):
     y_data = []
     # Setting percentage for training set
     train_percentage = 0.85
+    data_len = len(img_list)
 
     for i in range(len(img_list)):
         img = img_list[i]
@@ -187,8 +188,12 @@ def data_preparation(img_file_names, img_list, categ_array):
     test_images = np.asarray(img_file_names)
 
     random.seed()
-    n_train_samples = len(img_list) * train_percentage
-    train_index = random.sample(range(len(img_list + 1)), n_train_samples)
+    n_train_samples = data_len * train_percentage
+    n_train_samples = int(n_train_samples)
+
+    print("n_train_samples " + str(n_train_samples))
+    print("data_len " + str(data_len))
+    train_index = random.sample(range(data_len), n_train_samples)
     tot_index = [i for i in range(len(img_list))]
 
     test_index = []

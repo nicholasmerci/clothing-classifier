@@ -47,7 +47,16 @@ categ_array = np.asarray(categ_array)
 
 # Balancing most representative classes
 print("Classes Balancing")
+
 img_file_names, img_list, categ_array = balance_bigger_labels(img_file_names, img_list, categ_array)
+'''
+np.save("img_file_names.npy", img_file_names)
+np.save("img_list.npy", img_list)
+np.save("categ_array.npy", categ_array)
+'''
+img_file_names = np.load("img_file_names.npy")
+img_list = np.load("img_list.npy")
+categ_array = np.load("categ_array.npy")
 
 # Preparing dataset for KNN and SVM
 print("Preparing data")
@@ -62,12 +71,14 @@ print("Feature Normalization")
 x_train, x_test = data_scaler(x_train, x_test)
 
 # Principal Component Analysis
+print("PCA")
 n_components = .75
 x_train, x_test = pca(x_train, x_test, n_components)
 
 '''
     KNN Classifier
 '''
+print("KNN")
 k = 1
 metric = 'cosine'
 knn_classifier(test_images, x_train, x_test, y_train, y_test, k, metric)
@@ -75,7 +86,7 @@ knn_classifier(test_images, x_train, x_test, y_train, y_test, k, metric)
 '''
     SVM Classifier
 '''
-
+print("SVM")
 # Parameters Tuning
 # Finding best parameters wrt precision and recall
 

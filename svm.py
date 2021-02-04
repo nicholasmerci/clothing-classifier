@@ -27,7 +27,7 @@ def parameters_tuning(x_train, x_test, y_train, y_test, tuned_parameters, scores
     x_test = scaler.transform(x_test)
 
     for score in scores:
-        print("# Tuning hyper-parameters for %s\n" % score)
+        print("Tuning hyper-parameters for %s\n" % score)
 
         clf = GridSearchCV(
             SVC(), tuned_parameters, scoring='%s_macro' % score
@@ -98,7 +98,7 @@ def svm_poly(test_images, x_train, x_test, y_train, y_test, C, degree, max_itera
     # dump(models, 'modelSVC.joblib')
     # models = load('modelSVC.joblib')
 
-    results_calculator(test_images, models, x_train, x_test, y_train, y_test, kernel, max_iteration))
+    results_calculator(test_images, models, x_train, x_test, y_train, y_test, kernel, max_iteration)
 
 
 def svm_rbf(test_images, x_train, x_test, y_train, y_test, C, gamma, max_iteration):
