@@ -1,0 +1,4 @@
+train/
+*.pkl
+*.npy
+__pycache__
