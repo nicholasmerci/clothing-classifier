@@ -12,5 +12,5 @@ Dataset can be found here [DeepFashion2](https://drive.google.com/drive/folders/
 Note: we used only the train folder
 
 ## How to run
-main.py contains the execution pipeline starting from the dataset loading.
+[main.py](https://github.com/nicholasmerci/clothing-classifier/blob/main/main.py) contains the execution pipeline starting from the dataset loading.
 You can change the classifier's parameters manually from there.
