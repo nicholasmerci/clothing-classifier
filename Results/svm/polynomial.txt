@@ -78,6 +78,9 @@ Recall media del classificatore: 0.30
 poly 5000
 
 Accuratezza del classificatore: 50.33%
+
+Confusion Matrix:
+
 [[  0   0   0   0   0   0   0   0   0   0   0   0   0   0]
  [597 129   0  91 161   5  20  14  16  98  20  65  19   0]
  [243 271   0 196 121   6  26  23  33  93  32 101  22   0]
@@ -92,5 +95,7 @@ Accuratezza del classificatore: 50.33%
  [ 96  51   0  85  56   2   8  16  13 112 112  95  22   0]
  [ 54  37   0  57 111   8   9  26  31 157  26 531 103   0]
  [ 35  13   0  42  30   6   4  15  11  51   7 111 244   0]]
+ 
 Precisione media del classificatore: 0.54
+
 Recall media del classificatore: 0.47
