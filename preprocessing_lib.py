@@ -86,7 +86,6 @@ def hog_feat_extractor():
     img_array = []
     categ_array = []
 
-    print("loading file list (will take a while)")
     j = 1
     for filename in os.listdir(anno_folder):
         if(j % 100 == 0):
@@ -191,8 +190,6 @@ def data_preparation(img_file_names, img_list, categ_array):
     n_train_samples = data_len * train_percentage
     n_train_samples = int(n_train_samples)
 
-    print("n_train_samples " + str(n_train_samples))
-    print("data_len " + str(data_len))
     train_index = random.sample(range(data_len), n_train_samples)
     tot_index = [i for i in range(len(img_list))]
 

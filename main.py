@@ -10,29 +10,28 @@ anno_folder = "train/annos/"
 train_file = "df_train.pkl"
 
 # Loading dataframe
-print("Reading dataset...", end='')
+print("Reading dataset")
 if path.exists(train_file):
-    print("from file...", end='')
+    print("...from file")
     df = pd.read_pickle(train_file)
 else:
-    print("from dataset folder (it might take some minutes)...", end='')
-    df = df_from_dataset(anno_folder, train_file)
-print("loading completed.")
+    print("...from dataset folder (it might take several time)")
+    df = df_from_dataset(anno_folder)
+print("......loading completed.")
 
 # Extracting HOG features
-print("Feature Extraction...")
-
+print("Feature Extraction")
 if (not path.exists("img_list_hog.npy")) and (not path.exists("categ_array_hog.npy")):
-    print("no saved features, it might take several time.")
+    print("...no saved features, it might take several time.")
 else:
-    print("from file (it might take some minutes)...")
+    print("...from file (it might take some minutes)")
 
 if (not path.exists("img_list_hog.npy")) and (not path.exists("categ_array_hog.npy")):
     img_list, categ_array = hog_feat_extractor()
 else:
     img_list = np.load("img_list_hog.npy")
     categ_array = np.load("categ_array_hog.npy")
-print("completed.")
+print("......completed.")
 
 
 # Extracting NN features
